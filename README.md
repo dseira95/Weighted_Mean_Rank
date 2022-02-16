@@ -1,2 +1,2 @@
-# Weighted_Mean_Rank
+# Weighted Mean Rank
 Incident/Dynamic AUC
