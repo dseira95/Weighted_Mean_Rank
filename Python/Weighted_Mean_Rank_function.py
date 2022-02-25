@@ -7,20 +7,29 @@ import numpy as np
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Function for Weighted Mean Rank Method
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Input:
+# survival_time = amount of time passed until event occurs
+# survival_status = 0 (zero) are censored individuals and 1 (one) means event occurred such as death
+# marker = linear predictors from cox model
+
 def MeanRank(survival_time, survival_status, marker):
 
+#only keeping complete data
         keep = survival_time.notnull() & survival_status.notnull() & marker.notnull()
         survival_time = survival_time[keep]
         survival_status = survival_status[keep]
         marker = marker[keep]
 
+#keeping unique times where an event occurred and then ordering them
         utimes = survival_time[survival_status == 1].unique()
         utimes = sorted(utimes)
 
+#creating null variables that are used later
         nonparamAUC = np.repeat(None, len(utimes))
         nControls = np.repeat(None, len(utimes))
         TheMarker = marker
 
+#computing weighted mean rank at each unique event time point
         for j in range(0,len(utimes)):
                 dead_guy = TheMarker[(survival_time == utimes[j]) & (survival_status == 1)]
                 is_started = 0 < utimes[j]
@@ -37,6 +46,10 @@ def MeanRank(survival_time, survival_status, marker):
                                 mean_rank = mean_rank + this_rank / ndead
                         nonparamAUC[j] = mean_rank
 
+#Saving the output in a data frame
+# time = unique times that were ordered previously in the function
+# mean_rank = weighted mean rank outcome
+# nControls = amount of observations found after each unique time
         df = pd.DataFrame()
         df['time'] = pd.DataFrame(utimes)
         df['mean_rank'] = pd.DataFrame(nonparamAUC)
