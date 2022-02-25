@@ -9,6 +9,7 @@ from lifelines import KaplanMeierFitter
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Weighted Mean Rank function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Output of WMR function needed as input in C-index function
 def MeanRank(survival_time, survival_status, marker):
 
         keep = survival_time.notnull() & survival_status.notnull() & marker.notnull()
@@ -48,6 +49,12 @@ def MeanRank(survival_time, survival_status, marker):
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C-index function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Input:
+# survival_time = amount of time passed until event occurs
+# survival_status = 0 (zero) are censored individuals and 1 (one) means event occurred such as death
+# marker = linear predictors from cox model
+# cutoffTime = desired end-time point
+
 def dynamicIntegrateAUC(survival_time, survival_status, marker, cutoffTime):
 
         kmfit = KaplanMeierFitter().fit(survival_time, event_observed=survival_status)
@@ -71,4 +78,6 @@ def dynamicIntegrateAUC(survival_time, survival_status, marker, cutoffTime):
         S_tao = S_t[len(S_t) - 1]
         weights = (2*f_t*S_t) / (1-S_tao**2)
 
+#Output:
+# Returns the c-index
         return (sum(meanRanks * weights))
