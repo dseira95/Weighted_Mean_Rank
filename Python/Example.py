@@ -139,15 +139,7 @@ plt.show()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Nearest Neighbor Estimator (NNE) function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def make_pair_min(y):
-        y = sorted(y)
-        n = len(y)
-        weight = (n - array([i for i in range(1,n+1)]) + 1) + (n - array([i for i in range(1,n+1)]))
-        weight = weight / sum(weight)
-        mu = sum(y * weight)
-        return mu
-
-def nne(x, y, lambda0, nControls=None):
+def nne(x, y, lambda0):
         good_egg = x.notnull() & y.notnull()
         x = x[good_egg]
         y = y[good_egg]
@@ -169,14 +161,6 @@ def nne(x, y, lambda0, nControls=None):
                 keep = (array([i for i in range(1,n+1)]) >= iLower) & (array([i for i in range(1,n+1)]) <= iUpper)
                 nne_estimate[j] = np.mean(y[keep])
                 var_estimate[j] = np.var(y[keep]) / sum(keep)
-                if nControls is None:
-                        n0 = max(nControls[keep])
-                        m = sum(keep)
-                        pMin = make_pair_min(y[keep])
-                        p = nne_estimate[j]
-                        add_term = (pMin - p**2)
-                        add_term = add_term - (1/m)*(np.mean(y[keep])) - np.mean(y[keep]**2)
-                        var_estimate[j] = var_estimate[j] + add_term/n0
 
         df = pd.DataFrame()
         df['nne'] = pd.DataFrame(nne_estimate)
@@ -186,8 +170,8 @@ def nne(x, y, lambda0, nControls=None):
         return df
 
 #running NNE function with WMR data
-nne_4 = nne(x=wmr_4.time, y=wmr_4.mean_rank, lambda0=0.2, nControls=wmr_4.nControls) #4 covariates
-nne_5 = nne(x=wmr_5.time, y=wmr_5.mean_rank, lambda0=0.2, nControls=wmr_5.nControls) #5 covariates
+nne_4 = nne(x=wmr_4.time, y=wmr_4.mean_rank, lambda0=0.2) #4 covariates
+nne_5 = nne(x=wmr_5.time, y=wmr_5.mean_rank, lambda0=0.2) #5 covariates
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Scatter Plot of Weighted Mean Rank vs Time with NNE
