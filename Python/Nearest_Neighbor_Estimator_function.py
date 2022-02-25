@@ -8,19 +8,20 @@ from numpy import array
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Nearest Neighbor Estimator (NNE) function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def make_pair_min(y):
-        y = sorted(y)
-        n = len(y)
-        weight = (n - array([i for i in range(1,n+1)]) + 1) + (n - array([i for i in range(1,n+1)]))
-        weight = weight / sum(weight)
-        mu = sum(y * weight)
-        return mu
+#Output of WMR function needed as input 
+#Input:
+# x = time vector output from weighted mean rank function
+# y = weighted mean rank output from WMR function
+# lambda0 = half-bandwidth
 
-def nne(x, y, lambda0, nControls=None):
+def nne(x, y, lambda0):
+
+#keeping complete data only
         good_egg = x.notnull() & y.notnull()
         x = x[good_egg]
         y = y[good_egg]
 
+#ordering the data
         ooo = np.argsort(x)
         x = x[ooo]
         y = y[ooo]
@@ -32,21 +33,19 @@ def nne(x, y, lambda0, nControls=None):
         nne_estimate = np.repeat(None, n)
         var_estimate = np.repeat(None, n)
 
+#computing nearest neighbor estimator
         for j in range(0,n):
                 iLower = j - half_width
                 iUpper = j + half_width
                 keep = (array([i for i in range(1,n+1)]) >= iLower) & (array([i for i in range(1,n+1)]) <= iUpper)
                 nne_estimate[j] = np.mean(y[keep])
                 var_estimate[j] = np.var(y[keep]) / sum(keep)
-                if nControls is None:
-                        n0 = max(nControls[keep])
-                        m = sum(keep)
-                        pMin = make_pair_min(y[keep])
-                        p = nne_estimate[j]
-                        add_term = (pMin - p**2)
-                        add_term = add_term - (1/m)*(np.mean(y[keep])) - np.mean(y[keep]**2)
-                        var_estimate[j] = var_estimate[j] + add_term/n0
 
+#Saving the output in a data frame
+# nne = nearest neighbor estimator
+# var = variance estimate
+# x = ordered time event points
+# lambda = chosen lambda from input
         df = pd.DataFrame()
         df['nne'] = pd.DataFrame(nne_estimate)
         df['var'] = pd.DataFrame(var_estimate)
